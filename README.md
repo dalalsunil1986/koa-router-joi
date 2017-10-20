@@ -1,4 +1,4 @@
-#koa-router-joi
+# Koa Router with Joi
 
 Easy, rich and fully validated [koa](http://koajs.com) routing.
 
