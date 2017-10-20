@@ -1,10 +1,12 @@
-#joi-router
+#koa-router-joi
 
 Easy, rich and fully validated [koa](http://koajs.com) routing.
 
-[![Build Status](https://travis-ci.org/koajs/joi-router.svg?branch=master)](https://travis-ci.org/koajs/joi-router)
-[![Coverage Status](https://img.shields.io/coveralls/koajs/joi-router.svg)](https://coveralls.io/r/koajs/joi-router)
-[![npm](http://img.shields.io/npm/v/koa-joi-router.svg)](https://www.npmjs.org/package/koa-joi-router)
+[![Build Status](https://travis-ci.org/strapi/koa-router-joi.svg?branch=master)](https://travis-ci.org/strapi/koa-router-joi)
+[![Coverage Status](https://img.shields.io/coveralls/strapi/koa-router-joi.svg)](https://coveralls.io/r/strapi/koa-router-joi)
+[![npm](http://img.shields.io/npm/v/koa-router-joi.svg)](https://www.npmjs.org/package/koa-router-joi)
+
+> Forked from [koa-joi-router](https://github.com/koajs/joi-router). The project seems to not be maintained anymore.
 
 #### Features:
 

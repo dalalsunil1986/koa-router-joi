@@ -1,6 +1,6 @@
 {
-  "name": "koa-joi-router",
-  "version": "4.0.0",
+  "name": "koa-router-joi",
+  "version": "1.0.0",
   "description": "Configurable, input validated routing for koa.",
   "main": "joi-router.js",
   "keywords": [
@@ -21,12 +21,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/koajs/joi-router.git"
+    "url": "https://github.com/strapi/koa-router-joi.git"
   },
   "bugs": {
-    "url": "https://github.com/koajs/joi-router/issues"
+    "url": "https://github.com/strapi/koa-router-joi/issues"
   },
-  "homepage": "https://github.com/koajs/joi-router",
+  "homepage": "https://github.com/strapi/koa-router-joi",
   "dependencies": {
     "clone": "2.1.1",
     "co-body": "5.1.1",
