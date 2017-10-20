@@ -164,12 +164,17 @@ function checkHandler(spec) {
   return flatten(spec.handler).forEach(isGeneratorFunction);
 }
 
+function isAsync(fn) {
+   return fn.constructor.name === 'AsyncFunction';
+}
+
 /**
  * @api private
  */
 
 function isGeneratorFunction(handler) {
-  assert(isGenFn(handler), 'route handler must be a GeneratorFunction');
+  console.log(handler, isAsync(handler));
+  assert(isAsync(handler), 'route handler must be a GeneratorFunction');
 }
 
 /**
