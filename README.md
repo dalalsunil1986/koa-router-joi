@@ -1,6 +1,5 @@
 # Koa Router with Joi
 
-<<<<<<< HEAD
 Easy, rich and fully validated [koa](http://koajs.com) routing.
 
 [![Build Status](https://travis-ci.org/strapi/koa-router-joi.svg?branch=master)](https://travis-ci.org/strapi/koa-router-joi)
@@ -8,34 +7,6 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 [![npm](http://img.shields.io/npm/v/koa-router-joi.svg)](https://www.npmjs.org/package/koa-router-joi)
 
 > Forked from [koa-joi-router](https://github.com/koajs/joi-router). The project seems to not be maintained anymore.
-=======
-Easy, rich and fully validated [koa][] routing.
-
-[![NPM version][npm-image]][npm-url]
-[![build status][travis-image]][travis-url]
-[![Test coverage][codecov-image]][codecov-url]
-[![David deps][david-image]][david-url]
-[![npm download][download-image]][download-url]
-
-[npm-image]: https://img.shields.io/npm/v/koa-joi-router.svg?style=flat-square
-[npm-url]: https://npmjs.org/package/koa-joi-router
-[travis-image]: https://img.shields.io/travis/koajs/joi-router.svg?style=flat-square
-[travis-url]: https://travis-ci.org/koajs/joi-router
-[codecov-image]: https://codecov.io/github/koajs/joi-router/coverage.svg?branch=master
-[codecov-url]: https://codecov.io/github/koajs/joi-router?branch=master
-[david-image]: https://img.shields.io/david/koajs/joi-router.svg?style=flat-square
-[david-url]: https://david-dm.org/koajs/joi-router
-[download-image]: https://img.shields.io/npm/dm/koa-joi-router.svg?style=flat-square
-[download-url]: https://npmjs.org/package/koa-joi-router
-[co]: https://github.com/tj/co
-[koa]: http://koajs.com
-[co-body]: https://github.com/visionmedia/co-body
-[await-busboy]: https://github.com/aheckmann/await-busboy
-[joi]: https://github.com/hapijs/joi
-[koa-router]: https://github.com/alexmingoia/koa-router
-[generate API documentation]: https://github.com/a-s-o/koa-docs
-[path-to-regexp]: https://github.com/pillarjs/path-to-regexp
->>>>>>> 98dae5788c0416a715b4b724819c3d80d0279fcf
 
 #### Features:
 
@@ -576,8 +547,8 @@ supports it, so do we!
 ```js
 const router = require('koa-joi-router');
 const admin = router();
-admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', async (ctx, next) => { 
- console.log(ctx.request.params) // { year: '2017', day: '01', article: '011' } 
+admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', async (ctx, next) => {
+ console.log(ctx.request.params) // { year: '2017', day: '01', article: '011' }
 });
 ```
 
@@ -682,4 +653,3 @@ admin.route({
 ## LICENSE
 
 [MIT](https://github.com/koajs/joi-router/blob/master/LICENSE)
-
