@@ -10,10 +10,10 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 
 #### Features:
 
-- built in input validation using [joi][]
-- built in [output validation](#validating-output) using [joi][]
-- built in body parsing using [co-body][] and [await-busboy][]
-- built on the great [koa-router][]
+- built in input validation using [joi](https://github.com/hapijs/joi)
+- built in [output validation](#validating-output) using [joi](https://github.com/hapijs/joi)
+- built in body parsing using [co-body][] and [await-busboy](https://github.com/aheckmann/await-busboy)
+- built on the great [koa-router](https://github.com/alexmingoia/koa-router)
 - [exposed route definitions](#routes) for later analysis
 - string path support
 - [regexp-like path support](#path-regexps)
