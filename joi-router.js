@@ -6,7 +6,7 @@ const isGenFn = require('is-gen-fn');
 const flatten = require('flatten');
 const methods = require('methods');
 const KoaRouter = require('koa-router');
-const busboy = require('co-busboy');
+const busboy = require('await-busboy');
 const parse = require('co-body');
 const Joi = require('joi');
 const slice = require('sliced');
@@ -161,7 +161,7 @@ function checkHandler(spec) {
     spec.handler = [spec.handler];
   }
 
-  return flatten(spec.handler).forEach(isGeneratorFunction);
+  return flatten(spec.handler).forEach(isSupportedFunction);
 }
 
 function isAsync(fn) {
@@ -172,9 +172,13 @@ function isAsync(fn) {
  * @api private
  */
 
-function isGeneratorFunction(handler) {
-  console.log(handler, isAsync(handler));
-  assert(isAsync(handler), 'route handler must be a GeneratorFunction');
+function isSupportedFunction(handler) {
+  assert.equal('function', typeof handler, 'route handler must be a function');
+
+  if (isGenFn(handler)) {
+    throw new Error(`route handlers must not be GeneratorFunctions
+       Please use "async function" or "function".`);
+  }
 }
 
 /**
@@ -240,60 +244,60 @@ function checkValidators(spec) {
  * Creates body parser middleware.
  *
  * @param {Object} spec
- * @return {GeneratorFunction}
+ * @return {async function}
  * @api private
  */
 
 function makeBodyParser(spec) {
-  return function* parsePayload(next) {
-    if (!(spec.validate && spec.validate.type)) return yield* next;
+  return async function parsePayload(ctx, next) {
+    if (!(spec.validate && spec.validate.type)) return await next();
 
     let opts;
 
     try {
       switch (spec.validate.type) {
         case 'json':
-          if (!this.request.is('json')) {
-            return this.throw(400, 'expected json');
+          if (!ctx.request.is('json')) {
+            return ctx.throw(400, 'expected json');
           }
 
           opts = {
             limit: spec.validate.maxBody
           };
 
-          this.request.body = yield parse.json(this, opts);
+          ctx.request.body = await parse.json(ctx, opts);
           break;
 
         case 'form':
-          if (!this.request.is('urlencoded')) {
-            return this.throw(400, 'expected x-www-form-urlencoded');
+          if (!ctx.request.is('urlencoded')) {
+            return ctx.throw(400, 'expected x-www-form-urlencoded');
           }
 
           opts = {
             limit: spec.validate.maxBody
           };
 
-          this.request.body = yield parse.form(this, opts);
+          ctx.request.body = await parse.form(ctx, opts);
           break;
 
         case 'stream':
         case 'multipart':
-          if (!this.request.is('multipart/*')) {
-            return this.throw(400, 'expected multipart');
+          if (!ctx.request.is('multipart/*')) {
+            return ctx.throw(400, 'expected multipart');
           }
 
           opts = spec.validate.multipartOptions || {}; // TODO document this
           opts.autoFields = true;
 
-          this.request.parts = busboy(this, opts);
+          ctx.request.parts = busboy(ctx, opts);
           break;
       }
     } catch (err) {
-      if (!spec.validate.continueOnError) return this.throw(err);
-      captureError(this, 'type', err);
+      if (!spec.validate.continueOnError) return ctx.throw(err);
+      captureError(ctx, 'type', err);
     }
 
-    yield* next;
+    await next();
   };
 }
 
@@ -312,40 +316,40 @@ function captureError(ctx, type, err) {
  * Creates validator middleware.
  *
  * @param {Object} spec
- * @return {GeneratorFunction}
+ * @return {async function}
  * @api private
  */
 
 function makeValidator(spec) {
   const props = 'header query params body'.split(' ');
 
-  return function* validator(next) {
-    let err;
+  return async function validator(ctx, next) {
+    if (!spec.validate) return await next();
 
-    if (!spec.validate) return yield* next;
+    let err;
 
     for (let i = 0; i < props.length; ++i) {
       const prop = props[i];
 
       if (spec.validate[prop]) {
-        err = validateInput(prop, this, spec.validate);
+        err = validateInput(prop, ctx, spec.validate);
 
         if (err) {
-          if (!spec.validate.continueOnError) return this.throw(err);
-          captureError(this, prop, err);
+          if (!spec.validate.continueOnError) return ctx.throw(err);
+          captureError(ctx, prop, err);
         }
       }
     }
 
-    yield* next;
+    await next();
 
     if (spec.validate._outputValidator) {
       debug('validating output');
 
-      err = spec.validate._outputValidator.validate(this);
+      err = spec.validate._outputValidator.validate(ctx);
       if (err) {
         err.status = 500;
-        return this.throw(err);
+        return ctx.throw(err);
       }
     }
   };
@@ -355,14 +359,14 @@ function makeValidator(spec) {
  * Exposes route spec.
  *
  * @param {Object} spec
- * @return {GeneratorFunction}
+ * @return {async function}
  * @api private
  */
 function makeSpecExposer(spec) {
   const defn = clone(spec);
-  return function* specExposer(next) {
-    this.state.route = defn;
-    yield* next;
+  return async function specExposer(ctx, next) {
+    ctx.state.route = defn;
+    await next();
   };
 }
 
@@ -372,9 +376,9 @@ function makeSpecExposer(spec) {
  * @api private
  */
 
-function* prepareRequest(next) {
-  this.request.params = this.params;
-  yield* next;
+async function prepareRequest(ctx, next) {
+  ctx.request.params = ctx.params;
+  await next();
 }
 
 /**
@@ -421,27 +425,27 @@ function validateInput(prop, ctx, validate) {
  *
  *    var admin = router();
  *
- *    admin.get('/user', function *() {
- *      this.body = this.session.user;
+ *    admin.get('/user', async function(ctx) {
+ *      ctx.body = ctx.session.user;
  *    })
  *
  *    var validator = Joi().object().keys({ name: Joi.string() });
  *    var config = { validate: { body: validator }};
  *
- *    admin.post('/user', config, function *(){
- *      console.log(this.body);
+ *    admin.post('/user', config, async function(ctx){
+ *      console.log(ctx.body);
  *    })
  *
- *    function *commonHandler(){
+ *    async function commonHandler(ctx){
  *      // ...
  *    }
- *    admin.post('/account', [commonHandler, function *(){
+ *    admin.post('/account', [commonHandler, async function(ctx){
  *      // ...
  *    }]);
  *
  * @param {String} path
  * @param {Object} [config] optional
- * @param {GeneratorFunction|GeneratorFunction[]} handler(s)
+ * @param {async function|async function[]} handler(s)
  * @return {App} self
  */
 
@@ -471,9 +475,7 @@ methods.forEach((method) => {
       handler: fns
     };
 
-    Object.keys(config).forEach((key) => {
-      spec[key] = config[key];
-    });
+    Object.assign(spec, config);
 
     this.route(spec);
     return this;

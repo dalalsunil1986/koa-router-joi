@@ -4,7 +4,7 @@ require('co-mocha');
 require('co-supertest');
 
 const router = require('../');
-const koa = require('koa');
+const Koa = require('koa');
 const assert = require('assert');
 const request = require('supertest');
 const http = require('http');
@@ -14,7 +14,7 @@ const slice = require('sliced');
 const MiddlewareGenerator = require('./test-utils').MiddlewareGenerator;
 
 function makeRouterApp(router) {
-  const app = new koa();
+  const app = new Koa();
   app.use(router.middleware());
   return app;
 }
@@ -75,7 +75,7 @@ describe('koa-joi-router', () => {
           assert.throws(() => {
             router().route({
               path: '/',
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           }, /missing route method/);
 
@@ -83,7 +83,7 @@ describe('koa-joi-router', () => {
             router().route({
               path: '/',
               method: [],
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           }, /missing route method/);
 
@@ -107,7 +107,7 @@ describe('koa-joi-router', () => {
           r.route({
             path: '/',
             method: 'get',
-            handler: async (ctx) => {},
+            handler: () => {},
             validate: {
               failure: 404
             }
@@ -132,7 +132,7 @@ describe('koa-joi-router', () => {
           ];
 
           const r = router();
-          const fn = async (ctx) => {};
+          const fn = () => {};
 
           tests.forEach((test) => {
             const method = test[1] === 0 ?
@@ -155,7 +155,7 @@ describe('koa-joi-router', () => {
       describe('path', () => {
         it('can be a string', (done) => {
           const r = router();
-          const fn = async (ctx) => {};
+          const fn = () => {};
 
           assert.doesNotThrow(() => {
             r.get('/', fn);
@@ -216,7 +216,7 @@ describe('koa-joi-router', () => {
       r.route({
         method: 'put',
         path: '/asdf/:id',
-        handler: async (ctx) => {}
+        handler: () => {}
       });
 
       assert.equal(1, r.routes.length);
@@ -231,12 +231,12 @@ describe('koa-joi-router', () => {
         {
           method: 'put',
           path: '/asdf/:id',
-          handler: async (ctx) => {}
+          handler: () => {}
         },
         {
           method: 'get',
           path: '/asdf/:id',
-          handler: async (ctx) => {}
+          handler: () => {}
         }
       ]);
 
@@ -257,7 +257,7 @@ describe('koa-joi-router', () => {
             allowUnknown: true
           })
         },
-        handler: async (ctx) => {
+        handler: async function handler(ctx) {
           ctx.status = 204;
 
           try {
@@ -279,7 +279,7 @@ describe('koa-joi-router', () => {
         }
       });
 
-      const app = new koa();
+      const app = new Koa();
       app.use(r.middleware());
       test(app).get('/a?q=6').expect(204, (err, res) => {
         if (err) console.error(res.text);
@@ -304,7 +304,7 @@ describe('koa-joi-router', () => {
         }
       });
 
-      const app = new koa();
+      const app = new Koa();
       app.use(r.middleware());
       test(app).get('/product/4/remove').expect(200, done);
     });
@@ -327,11 +327,11 @@ describe('koa-joi-router', () => {
               }
             });
 
-            async (ctx) => {
+            function fn(ctx) {
               ctx.body = ctx.request.body.last + ' ' + ctx.request.body.first;
             }
 
-            const app = new koa();
+            const app = new Koa();
             app.use(r.middleware());
             test(app).post('/')
             .send({
@@ -350,7 +350,7 @@ describe('koa-joi-router', () => {
             r.route({
               method: 'post',
               path: '/',
-              handler: async (ctx) => {
+              handler: function(ctx) {
                 ctx.status = 204;
               },
               validate: {
@@ -358,7 +358,7 @@ describe('koa-joi-router', () => {
               }
             });
 
-            const app = new koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -381,13 +381,13 @@ describe('koa-joi-router', () => {
                   type: 'json',
                   continueOnError: true
                 },
-                handler: async (ctx) => {
+                handler: (ctx) => {
                   ctx.status = 200;
                   ctx.body = ctx.invalid.type.msg;
                 }
               });
 
-              const app = new koa();
+              const app = new Koa();
               app.use(r.middleware());
 
               test(app)
@@ -413,7 +413,7 @@ describe('koa-joi-router', () => {
             r.route({
               method: 'post',
               path: '/',
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.status = 204;
               },
               validate: {
@@ -421,7 +421,7 @@ describe('koa-joi-router', () => {
               }
             });
 
-            const app = new koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -442,7 +442,7 @@ describe('koa-joi-router', () => {
                   type: 'json',
                   continueOnError: true
                 },
-                handler: async (ctx) => {
+                handler: (ctx) => {
                   ctx.status = 200;
                   ctx.body = ctx.invalid &&
                     ctx.invalid.type &&
@@ -450,7 +450,7 @@ describe('koa-joi-router', () => {
                 }
               });
 
-              const app = new koa();
+              const app = new Koa();
               app.use(r.middleware());
 
               test(app)
@@ -478,11 +478,11 @@ describe('koa-joi-router', () => {
               }
             });
 
-            async (ctx) => {
+            function fn(ctx) {
               ctx.body = ctx.request.body.last + ' ' + ctx.request.body.first;
             }
 
-            const app = new koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -505,7 +505,7 @@ describe('koa-joi-router', () => {
             r.route({
               method: 'post',
               path: '/',
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.status = 204;
               },
               validate: {
@@ -513,7 +513,7 @@ describe('koa-joi-router', () => {
               }
             });
 
-            const app = new koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -537,13 +537,13 @@ describe('koa-joi-router', () => {
                   type: 'form',
                   continueOnError: true
                 },
-                handler: async (ctx) => {
+                handler: (ctx) => {
                   ctx.status = 200;
                   ctx.body = ctx.invalid.type.msg;
                 }
               });
 
-              const app = new koa();
+              const app = new Koa();
               app.use(r.middleware());
 
               test(app)
@@ -566,7 +566,7 @@ describe('koa-joi-router', () => {
             r.route({
               method: 'post',
               path: '/',
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.status = 204;
               },
               validate: {
@@ -574,7 +574,7 @@ describe('koa-joi-router', () => {
               }
             });
 
-            const app = new koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -593,13 +593,13 @@ describe('koa-joi-router', () => {
                   type: 'form',
                   continueOnError: true
                 },
-                handler: async (ctx) => {
+                handler: (ctx) => {
                   ctx.status = 200;
                   ctx.body = ctx.invalid.type.msg;
                 }
               });
 
-              const app = new koa();
+              const app = new Koa();
               app.use(r.middleware());
 
               test(app)
@@ -619,7 +619,7 @@ describe('koa-joi-router', () => {
             method: 'put',
             path: '/',
             type: 'multipart',
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.status = undefined === ctx.request.body ?
                 200 :
                 500;
@@ -629,7 +629,7 @@ describe('koa-joi-router', () => {
             }
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           const b = new Buffer(1024);
@@ -655,26 +655,31 @@ describe('koa-joi-router', () => {
               method: 'put',
               path: '/',
               handler: async (ctx) => {
-                let part; // eslint-disable-line no-unused-vars
-                while ((part = await ctx.request.parts)) {}
-                ctx.body = ctx.request.parts.field.color;
+                let filename;
+                let part;
+                while ((part = await ctx.request.parts)) {
+                  filename = part.filename;
+                  part.resume();
+                }
+
+                ctx.body = {
+                  color: ctx.request.parts.field.color,
+                  file: filename
+                };
               },
               validate: {
                 type: type
               }
             });
 
-            const app = new koa();
+            const app = new Koa();
             app.use(r.middleware());
-
-            const b = new Buffer(1024);
-            b.fill('a');
 
             test(app)
             .put('/')
-            .attach('file1', b)
-            .attach('color', new Buffer('green'))
-            .expect(200, done);
+            .attach('file1', `${__dirname}/fixtures/koa.png`)
+            .field('color', new Buffer('green'))
+            .expect('{"color":"green","file":"koa.png"}', done);
           });
         });
       });
@@ -686,7 +691,7 @@ describe('koa-joi-router', () => {
           r.route({
             method: 'put',
             path: '/',
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.status = undefined === ctx.request.parts ?
                 200 :
                 500;
@@ -694,7 +699,7 @@ describe('koa-joi-router', () => {
             validate: {}
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           const b = new Buffer(1024);
@@ -725,12 +730,12 @@ describe('koa-joi-router', () => {
               allowUnknown: true
             })
           },
-          handler: async (ctx) => {
+          handler: (ctx) => {
             ctx.body = ctx.request.query;
           }
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         it('missing querystring', (done) => {
@@ -787,7 +792,7 @@ describe('koa-joi-router', () => {
               b: Joi.boolean().required()
             })
           },
-          handler: async (ctx) => {
+          handler: (ctx) => {
             ctx.body = {
               query: ctx.request.query,
               date: {
@@ -804,7 +809,7 @@ describe('koa-joi-router', () => {
           }
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         test(app).get('/a?d=7-27-2016&n=34&b=true')
@@ -831,12 +836,12 @@ describe('koa-joi-router', () => {
               1: Joi.number().max(1000)
             })
           },
-          handler: async (ctx) => {
+          handler: (ctx) => {
             ctx.body = ctx.request.params;
           }
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         it('with invalid first match', (done) => {
@@ -867,12 +872,12 @@ describe('koa-joi-router', () => {
               sku: Joi.string().alphanum().length(6)
             })
           },
-          handler: async (ctx) => {
+          handler: (ctx) => {
             ctx.body = ctx.request.params;
           }
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         it('invalid quantity and invalid sku', (done) => {
@@ -918,7 +923,7 @@ describe('koa-joi-router', () => {
               field: Joi.any()
             })
           },
-          handler: async (ctx) => {
+          handler: async function(ctx) {
             const params = ctx.request.params.field === 'request' ?
               ctx.request.params :
               ctx.params;
@@ -939,7 +944,7 @@ describe('koa-joi-router', () => {
           }
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         test(app).get('/request/7-27-2016/34/true')
@@ -973,12 +978,12 @@ describe('koa-joi-router', () => {
             Joi.object({ 'x-for-fun': Joi.number().min(5).max(8).required() })
               .options({ allowUnknown: true })
         },
-        handler: async (ctx) => {
+        handler: (ctx) => {
           ctx.status = 204;
         }
       });
 
-      const app = new koa();
+      const app = new Koa();
       app.use(r.middleware());
 
       it('with missing header fails', (done) => {
@@ -1020,7 +1025,7 @@ describe('koa-joi-router', () => {
                   r.route({
                     method: 'post',
                     path: '/',
-                    handler: async (ctx) => {},
+                    handler: () => {},
                     validate: {
                       body: Joi.object({ name: Joi.string() }),
                       type: name
@@ -1042,7 +1047,7 @@ describe('koa-joi-router', () => {
               r.route({
                 method: 'post',
                 path: '/',
-                handler: async (ctx) => {},
+                handler: () => {},
                 validate: {
                   body: Joi.object({ name: Joi.string() })
                 }
@@ -1067,12 +1072,12 @@ describe('koa-joi-router', () => {
             }),
             type: 'json'
           },
-          handler: async (ctx) => {
+          handler: (ctx) => {
             ctx.status = 200;
           }
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         it('no posted values', (done) => {
@@ -1138,13 +1143,13 @@ describe('koa-joi-router', () => {
                   name: Joi.string().min(10)
                 }
               },
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.status = 200;
                 ctx.body = !!ctx.invalid;
               }
             });
 
-            const app = new koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -1168,12 +1173,12 @@ describe('koa-joi-router', () => {
           validate: {
             type: 'multipart'
           },
-          handler: async (ctx) => {
+          handler: (ctx) => {
             ctx.status = 200;
           }
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         test(app).post('/').send({ hi: 'there' }).expect(400, (err) => {
@@ -1202,7 +1207,7 @@ describe('koa-joi-router', () => {
                   '200': { body: Joi.any().equal('asdr') }
                 }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
@@ -1218,7 +1223,7 @@ describe('koa-joi-router', () => {
                   '201,202': { body: Joi.any().equal('band-reject') }
                 }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
@@ -1234,7 +1239,7 @@ describe('koa-joi-router', () => {
                   '400, 401': { body: Joi.any().equal('low-pass') }
                 }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
@@ -1250,12 +1255,12 @@ describe('koa-joi-router', () => {
                   '402-404': { body: Joi.any().equal('hi-pass') }
                 }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
 
-        it('allows combinations of integers, commas and ranges', async () => {
+        it('allows combinations of integers, commas and ranges', function* () {
           const r = router();
 
           assert.doesNotThrow(() => {
@@ -1267,7 +1272,7 @@ describe('koa-joi-router', () => {
                   '500-502, 504 ,506-510,201': { body: Joi.any().equal('band-pass') }
                 }
               },
-              handler: async (ctx) => {
+              handler: function(ctx) {
                 ctx.status = parseInt(ctx.params.status, 10);
 
                 if (ctx.params.status === '200') {
@@ -1279,19 +1284,19 @@ describe('koa-joi-router', () => {
             });
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
 
-          await test(app).post('/combo/500').expect('band-pass').expect(500).end();
-          await test(app).post('/combo/501').expect('band-pass').expect(501).end();
-          await test(app).post('/combo/504').expect('band-pass').expect(504).end();
-          await test(app).post('/combo/506').expect('band-pass').expect(506).end();
-          await test(app).post('/combo/510').expect('band-pass').expect(510).end();
-          await test(app).post('/combo/201').expect('band-pass').expect(201).end();
-          await test(app).post('/combo/200').expect(200).end();
+          yield test(app).post('/combo/500').expect('band-pass').expect(500).end();
+          yield test(app).post('/combo/501').expect('band-pass').expect(501).end();
+          yield test(app).post('/combo/504').expect('band-pass').expect(504).end();
+          yield test(app).post('/combo/506').expect('band-pass').expect(506).end();
+          yield test(app).post('/combo/510').expect('band-pass').expect(510).end();
+          yield test(app).post('/combo/201').expect('band-pass').expect(201).end();
+          yield test(app).post('/combo/200').expect(200).end();
         });
 
-        it('allows the "*" to represent all status codes', async () => {
+        it('allows the "*" to represent all status codes', function* () {
           const r = router();
 
           assert.doesNotThrow(() => {
@@ -1303,16 +1308,16 @@ describe('koa-joi-router', () => {
                   '*': { body: Joi.any().equal('all') }
                 }
               },
-              handler: async (ctx) => {
+              handler: function(ctx) {
                 ctx.status = 201;
                 ctx.body = 'all';
               }
             });
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
-          await test(app).get('/all').expect('all').expect(201).end();
+          yield test(app).get('/all').expect('all').expect(201).end();
         });
 
         describe('throws on invalid pattern', () => {
@@ -1344,7 +1349,7 @@ describe('koa-joi-router', () => {
                   method: 'get',
                   path: '/invalid',
                   validate: { output: output },
-                  handler: async (ctx) => {}
+                  handler: () => {}
                 });
               });
 
@@ -1364,7 +1369,7 @@ describe('koa-joi-router', () => {
                   '%': { body: Joi.string() }
                 }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
@@ -1382,7 +1387,7 @@ describe('koa-joi-router', () => {
                   '200, 201': { body: Joi.any().equal('all') }
                 }
               },
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.body = 'all';
               }
             });
@@ -1398,7 +1403,7 @@ describe('koa-joi-router', () => {
                   '200-500': { body: Joi.any().equal('all') }
                 }
               },
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.body = 'all';
               }
             });
@@ -1414,7 +1419,7 @@ describe('koa-joi-router', () => {
                   '404': { body: Joi.any().equal('all') }
                 }
               },
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.body = 'all';
               }
             });
@@ -1430,7 +1435,7 @@ describe('koa-joi-router', () => {
                   '200,204': { body: Joi.any().equal('all') }
                 }
               },
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.body = 'all';
               }
             });
@@ -1446,7 +1451,7 @@ describe('koa-joi-router', () => {
                   '200, 201-203, 206, 301-400': { body: Joi.any().equal('all') }
                 }
               },
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.body = 'all';
               }
             });
@@ -1462,7 +1467,7 @@ describe('koa-joi-router', () => {
                   '500': { body: Joi.any().equal('all') }
                 }
               },
-              handler: async (ctx) => {
+              handler: (ctx) => {
                 ctx.body = 'all';
               }
             });
@@ -1482,7 +1487,7 @@ describe('koa-joi-router', () => {
                   '203-599': { body: Joi.any().equal('all') }
                 }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
@@ -1498,7 +1503,7 @@ describe('koa-joi-router', () => {
               validate: {
                 output: { '200': {} }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
@@ -1514,7 +1519,7 @@ describe('koa-joi-router', () => {
                   '200': { headers: { x: Joi.any() } }
                 }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
@@ -1530,7 +1535,7 @@ describe('koa-joi-router', () => {
                   '200': { body: { x: Joi.any() } }
                 }
               },
-              handler: async (ctx) => {}
+              handler: () => {}
             });
           });
         });
@@ -1548,7 +1553,7 @@ describe('koa-joi-router', () => {
                 '100-599': { body: { n: Joi.number().max(10).required() } }
               }
             },
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.body = { n: '3' };
             }
           });
@@ -1561,7 +1566,7 @@ describe('koa-joi-router', () => {
                 '200': { body: Joi.number().required() }
               }
             },
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.status = 200;
             }
           });
@@ -1578,7 +1583,7 @@ describe('koa-joi-router', () => {
                 }
               }
             },
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.body = {
                 x: 'hi',
                 y: 'asdf'
@@ -1586,23 +1591,23 @@ describe('koa-joi-router', () => {
             }
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
 
-          it('casts output values according to Joi rules', async () => {
+          it('casts output values according to Joi rules', function* () {
             // n should be cast to a number
-            await test(app).post('/a/b').expect('{"n":3}').expect(200).end();
+            yield test(app).post('/a/b').expect('{"n":3}').expect(200).end();
           });
 
           describe('but not included in response', () => {
-            it('responds with a 500', async () => {
-              await test(app).post('/body/missing').expect(500).end();
+            it('responds with a 500', function* () {
+              yield test(app).post('/body/missing').expect(500).end();
             });
           });
 
           describe('when output is invalid', () => {
-            it('responds with a 500', async () => {
-              await test(app).post('/body/invalid').expect(500).end();
+            it('responds with a 500', function* () {
+              yield test(app).post('/body/invalid').expect(500).end();
             });
           });
         });
@@ -1613,16 +1618,16 @@ describe('koa-joi-router', () => {
           r.route({
             method: 'post',
             path: '/notouch',
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.body = { n: '4' };
             }
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
 
-          it('is not touched', async () => {
-            const o = await test(app).post('/notouch').expect(200).end();
+          it('is not touched', function* () {
+            const o = yield test(app).post('/notouch').expect(200).end();
             assert.strictEqual(o.text, '{"n":"4"}');
           });
         });
@@ -1648,7 +1653,7 @@ describe('koa-joi-router', () => {
                 }
               }
             },
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.set('n', '3');
               ctx.body = 'RWC';
             }
@@ -1664,7 +1669,7 @@ describe('koa-joi-router', () => {
                 }
               }
             },
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.set('nope', 5);
               ctx.body = 'RWC';
             }
@@ -1680,29 +1685,29 @@ describe('koa-joi-router', () => {
                 }
               }
             },
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.set('n', 100);
               ctx.body = 'RWC';
             }
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
 
-          it('casts output values according to Joi rules', async () => {
+          it('casts output values according to Joi rules', function* () {
             // n should be cast to a number
-            await test(app).post('/headers/cast').expect('n', 3).expect(200).end();
+            yield test(app).post('/headers/cast').expect('n', 3).expect(200).end();
           });
 
           describe('but not included in response', () => {
-            it('responds with a 500', async () => {
-              await test(app).post('/headers/missing').expect(500).end();
+            it('responds with a 500', function* () {
+              yield test(app).post('/headers/missing').expect(500).end();
             });
           });
 
           describe('when output is invalid', () => {
-            it('responds with a 500', async () => {
-              await test(app).post('/headers/invalid').expect(500).end();
+            it('responds with a 500', function* () {
+              yield test(app).post('/headers/invalid').expect(500).end();
             });
           });
         });
@@ -1713,23 +1718,23 @@ describe('koa-joi-router', () => {
           r.route({
             method: 'post',
             path: '/notouch',
-            handler: async (ctx) => {
+            handler: (ctx) => {
               ctx.set('n', '3');
               ctx.body = 'RWC';
             }
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
 
-          it('is not touched', async () => {
-            const o = await test(app).post('/notouch').expect(200).end();
+          it('is not touched', function* () {
+            const o = yield test(app).post('/notouch').expect(200).end();
             assert.strictEqual(o.header.n, '3');
           });
         });
       });
 
-      it('does not occur when no status code matches', async () => {
+      it('does not occur when no status code matches', function* () {
         const r = router();
 
         r.route({
@@ -1740,15 +1745,15 @@ describe('koa-joi-router', () => {
               '510': { body: { n: Joi.string() } }
             }
           },
-          handler: async (ctx) => {
+          handler: (ctx) => {
             ctx.body = { n: 4 };
           }
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
-        const o = await test(app).post('/notouch').expect(200).end();
+        const o = yield test(app).post('/notouch').expect(200).end();
         assert.strictEqual(o.text, '{"n":4}');
       });
     });
@@ -1756,12 +1761,12 @@ describe('koa-joi-router', () => {
     describe('with multiple methods', () => {
       describe('and multiple middleware', () => {
         it('works', (done) => {
-          const a = async (ctx, next) => {
+          async function a(ctx, next) {
             ctx.worked = true;
             await next();
           }
 
-          const b = async (ctx, next) => {
+          function b(ctx) {
             ctx.body = {
               worked: !!ctx.worked
             };
@@ -1779,7 +1784,7 @@ describe('koa-joi-router', () => {
             }
           });
 
-          const app = new koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           test(app).put('/').set('yum', '&&').expect(400, (err) => {
@@ -1913,7 +1918,7 @@ describe('koa-joi-router', () => {
 
   describe('use()', () => {
     describe('runs middleware before routes', () => {
-      it('when called before routes', async () => {
+      it('when called before routes', function* () {
         const r = router();
         let middlewareRanFirst = false;
 
@@ -1922,24 +1927,24 @@ describe('koa-joi-router', () => {
           await next();
         });
 
-        r.get('/test', async (ctx) => {
+        r.get('/test', (ctx) => {
           ctx.body = String(middlewareRanFirst);
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
-        await test(app).get('/test')
+        yield test(app).get('/test')
         .expect('true')
         .expect(200)
         .end();
       });
 
-      it('when called after routes', async () => {
+      it('not after routes', function* () {
         const r = router();
         let middlewareRanFirst = false;
 
-        r.get('/test', async (ctx) => {
+        r.get('/test', (ctx) => {
           ctx.body = String(middlewareRanFirst);
         });
 
@@ -1948,42 +1953,42 @@ describe('koa-joi-router', () => {
           await next();
         });
 
-        const app = new koa();
+        const app = new Koa();
         app.use(r.middleware());
 
-        await test(app).get('/test')
-        .expect('true')
+        yield test(app).get('/test')
+        .expect('false')
         .expect(200)
         .end();
       });
     });
 
     describe('accepts an optional path', () => {
-      it('applies middleware only to that path', async () => {
+      it('which applies middleware only to that path', function* () {
         const r = router();
-        let middlewareRanFirst = false;
-
-        const route = async (ctx) => {
-          ctx.body = String(middlewareRanFirst);
-        }
-
-        r.get('/test', route);
-        r.get('/nada', route);
+        let middlewareRan = false;
 
         r.use('/nada', async (ctx, next) => {
-          middlewareRanFirst = true;
+          middlewareRan = true;
           await next();
         });
 
-        const app = new koa();
+        function route(ctx) {
+          ctx.body = String(middlewareRan);
+        }
+
+        r.get('/nada', route);
+        r.get('/test', route);
+
+        const app = new Koa();
         app.use(r.middleware());
 
-        await test(app).get('/test')
+        yield test(app).get('/test')
         .expect('false')
         .expect(200)
         .end();
 
-        await test(app).get('/nada')
+        yield test(app).get('/nada')
         .expect('true')
         .expect(200)
         .end();
@@ -1992,8 +1997,8 @@ describe('koa-joi-router', () => {
   });
 
   describe('prefix()', () => {
-    it('adds routes as children of the `path`', async () => {
-      const app = new koa();
+    it('adds routes as children of the `path`', function* () {
+      const app = new Koa();
       app.context.msg = 'fail';
 
       const r = router();
@@ -2003,50 +2008,50 @@ describe('koa-joi-router', () => {
         await next();
       });
 
-      r.get('/', async (ctx) => {
+      r.get('/', (ctx) => {
         ctx.body = ctx.msg;
       });
 
-      r.get('/itworks', async (ctx) => {
+      r.get('/itworks', (ctx) => {
         ctx.body = 'it' + ctx.msg;
       });
 
       r.get('/testparam/:id', {
-        validate: { params: { id: Joi.string().min(5) } }
-      }, async (ctx) => {
-        ctx.body = 'it' + ctx.msg;
+        validate: { params: { id: Joi.string().min(4) } }
+      }, (ctx) => {
+        ctx.body = `it${ctx.msg}${ctx.params.id}`;
       });
 
       r.prefix('/user');
 
       app.use(r.middleware());
 
-      await test(app).get('/')
+      yield test(app).get('/')
       .expect(404)
       .end();
 
-      await test(app).get('/user')
+      yield test(app).get('/user')
       .expect('works')
       .expect(200)
       .end();
 
-      await test(app).get('/user/')
+      yield test(app).get('/user/')
       .expect('works')
       .expect(200)
       .end();
 
-      await test(app).get('/user/itworks')
+      yield test(app).get('/user/itworks')
       .expect('itworks')
       .expect(200)
       .end();
 
-      await test(app).get('/user/itworks/')
+      yield test(app).get('/user/itworks/')
       .expect('itworks')
       .expect(200)
       .end();
 
-      await test(app).get('/user/testparam/itworks')
-      .expect('itworks')
+      yield test(app).get('/user/testparam/dude')
+      .expect('itworksdude')
       .expect(200)
       .end();
     });
